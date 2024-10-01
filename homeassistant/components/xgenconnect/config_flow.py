@@ -8,19 +8,20 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_HOST, CONF_PIN, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PIN, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import DEFAULT_USER_NAME, DOMAIN
+from .const import DEFAULT_PANEL_NAME, DEFAULT_USER_NAME, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 # adjust the data schema to the data that you need
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_NAME, default=DEFAULT_PANEL_NAME): str,
         vol.Required(CONF_HOST): str,
-        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_USERNAME, default=DEFAULT_USER_NAME): str,
         vol.Required(CONF_PIN): str,
     }
 )
@@ -41,7 +42,8 @@ class PlaceholderHub:
         return True
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]):
+    # -> dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
@@ -65,7 +67,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     # InvalidAuth
 
     # Return info that you want to store in the config entry.
-    return {"title": "xGenConnect panel"}
+    # return {"title": "xGenConnect panel"}
 
 
 class XGenConnectConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -83,7 +85,7 @@ class XGenConnectConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # self._errors[CONF_HOST] = "already_configured"
             try:
-                info = await validate_input(self.hass, user_input)
+                await validate_input(self.hass, user_input)
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
@@ -93,10 +95,15 @@ class XGenConnectConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 return self.async_create_entry(
-                    title=info["title"], data=user_input, description="YoMomma"
+                    title=user_input[CONF_NAME], data=user_input
                 )
         else:
-            user_input = {CONF_HOST: "", CONF_USERNAME: DEFAULT_USER_NAME, CONF_PIN: ""}
+            user_input = {
+                CONF_NAME: DEFAULT_PANEL_NAME,
+                CONF_HOST: "",
+                CONF_USERNAME: DEFAULT_USER_NAME,
+                CONF_PIN: "",
+            }
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors

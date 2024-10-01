@@ -3,10 +3,7 @@
 from __future__ import annotations
 
 # import socket
-from typing import TypedDict
-
 # from aiohttp import ClientError
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
@@ -14,17 +11,9 @@ from homeassistant.core import HomeAssistant
 # from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api.xGenConnectApi import MyApi
 from .const import LOGGER
+from .types import XGenConnectConfigEntry, XGenConnectData
 
 PLATFORMS: list[Platform] = [Platform.ALARM_CONTROL_PANEL]
-
-type XGenConnectConfigEntry = ConfigEntry[XGenConnectData]  # noqa: F821
-
-
-class XGenConnectData(TypedDict):
-    """Data for the xGenConnect integration."""
-
-    api_client: MyApi
-
 
 # async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 #     """Foo Bar."""
