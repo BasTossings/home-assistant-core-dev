@@ -1,0 +1,14 @@
+{
+  "domain": "xgenconnect",
+  "name": "xGenConnect",
+  "codeowners": ["@BasTossings"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/xgenconnect",
+  "homekit": {},
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": []
+}

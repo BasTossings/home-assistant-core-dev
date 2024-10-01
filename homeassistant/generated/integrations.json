@@ -7009,6 +7009,12 @@
       "config_flow": false,
       "iot_class": "local_polling"
     },
+    "xgenconnect": {
+      "name": "xGenConnect",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_polling"
+    },
     "xiaomi": {
       "name": "Xiaomi",
       "integrations": {

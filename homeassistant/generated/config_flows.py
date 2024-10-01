@@ -677,6 +677,7 @@ FLOWS = {
         "ws66i",
         "wyoming",
         "xbox",
+        "xgenconnect",
         "xiaomi_aqara",
         "xiaomi_ble",
         "xiaomi_miio",
