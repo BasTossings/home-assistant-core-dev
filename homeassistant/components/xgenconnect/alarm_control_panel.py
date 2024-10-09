@@ -6,11 +6,11 @@ from homeassistant.components.alarm_control_panel import (
     # SensorStateClass,
     AlarmControlPanelEntity,
     AlarmControlPanelEntityFeature,
+    # AlarmControlPanelEntityDescription,
     CodeFormat,
 )
 from homeassistant.const import (
-    CONF_HOST,
-    CONF_NAME,
+    # CONF_HOST,
     STATE_ALARM_ARMED_AWAY,
     STATE_ALARM_ARMED_CUSTOM_BYPASS,
     STATE_ALARM_ARMED_HOME,
@@ -20,10 +20,14 @@ from homeassistant.const import (
     STATE_ALARM_DISARMED,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
 
-from .const import DOMAIN, LOGGER
+from .alarm_system import XGenConnectAlarmSystem
+from .const import LOGGER
 from .types import XGenConnectConfigEntry
 
 # def setup_platform(
@@ -42,13 +46,32 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the alarm panel platform."""
-    async_add_entities([xGenConnectAlarmPanel(config_entry)])
+
+    # pylint: disable=fixme, import-outside-toplevel
+    # pylint: disable=fixme, hass-relative-import
+
+    from homeassistant.components.xgenconnect.entity_factory import (
+        XGenConnectEntityFactory,
+    )
+
+    factory = XGenConnectEntityFactory(hass, config_entry)
+    async_add_entities(factory.get_alarm_panels())
 
 
-class xGenConnectAlarmPanel(AlarmControlPanelEntity):
-    """Representation of a xGenConnect alarm panel."""
+# Alarm panel implementation
 
-    def __init__(self, config_entry: XGenConnectConfigEntry) -> None:
+
+class xGenConnectAlarmPartition(
+    CoordinatorEntity[DataUpdateCoordinator[None]],
+    AlarmControlPanelEntity,
+    # AlarmControlPanelEntity
+):
+    """Representation of a xGenConnect alarm partition."""
+
+    system: XGenConnectAlarmSystem
+    partition_index: int
+
+    def __init__(self, system: XGenConnectAlarmSystem, partition_index: int) -> None:
         """Initialize the alarm panel."""
         self.supported_features = (
             AlarmControlPanelEntityFeature.ARM_AWAY
@@ -58,20 +81,20 @@ class xGenConnectAlarmPanel(AlarmControlPanelEntity):
             | AlarmControlPanelEntityFeature.ARM_VACATION
             | AlarmControlPanelEntityFeature.TRIGGER
         )
-        self._attr_name = config_entry.data[CONF_NAME]
+        super().__init__(system.coordinator)
+
+        # self.entity_description = AlarmControlPanelEntityDescription()
+
+        self.system = system
+        self.partition_index = partition_index
+
+        self._attr_name = self.system.get_partition_name(self.partition_index)
         self._attr_native_value = 123
         self._attr_state = STATE_ALARM_DISARMED
         self._attr_code_arm_required = True
         self._attr_code_format = CodeFormat.NUMBER
-        self._attr_unique_id = config_entry.entry_id
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, config_entry.data[CONF_HOST])},
-            manufacturer="Interlogix",
-        )
-
-    # _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
-    # _attr_device_class = SensorDeviceClass.TEMPERATURE
-    # _attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_unique_id = system.config_entry.entry_id
+        self._attr_device_info = system.device_info
 
     def alarm_disarm(self, code: str | None = None) -> None:
         """Send disarm command."""
@@ -132,6 +155,12 @@ class xGenConnectAlarmPanel(AlarmControlPanelEntity):
         """Send arm custom bypass command."""
         LOGGER.info("Arm Custom Bypass: %s", code)
         self._attr_state = STATE_ALARM_ARMED_CUSTOM_BYPASS
+
+    @property
+    def unique_id(self) -> str | None:
+        """Return a unique ID."""
+
+        return f"{self.system.name}_partition_{self.partition_index}"
 
     def update(self) -> None:
         """Fetch new state data for the alarm panel.

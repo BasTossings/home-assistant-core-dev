@@ -4,7 +4,7 @@ from typing import TypedDict
 
 from homeassistant.config_entries import ConfigEntry
 
-from .api.xGenConnectApi import MyApi
+from .api.xGenConnectApi import XGenConnectApi
 
 type XGenConnectConfigEntry = ConfigEntry[XGenConnectData]  # noqa: F821
 
@@ -12,4 +12,4 @@ type XGenConnectConfigEntry = ConfigEntry[XGenConnectData]  # noqa: F821
 class XGenConnectData(TypedDict):
     """Data for the xGenConnect integration."""
 
-    api_client: MyApi
+    api_client: XGenConnectApi

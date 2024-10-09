@@ -4,13 +4,14 @@ from __future__ import annotations
 
 # import socket
 # from aiohttp import ClientError
-from homeassistant.const import Platform
+from homeassistant.const import CONF_HOST, CONF_PIN, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 
 # from homeassistant.exceptions import ConfigEntryNotReady
 # from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from .api.xGenConnectApi import MyApi
-from .const import LOGGER
+from .api.xGenConnectApi import XGenConnectApi
+
+# from .const import LOGGER
 from .types import XGenConnectConfigEntry, XGenConnectData
 
 PLATFORMS: list[Platform] = [Platform.ALARM_CONTROL_PANEL]
@@ -27,9 +28,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: XGenConnectConfigEntry) 
     """Set up xGenConnect from a config entry."""
 
     # session = async_get_clientsession(hass)
-    api = MyApi()
+    api = XGenConnectApi(entry.data[CONF_HOST])
 
-    LOGGER.info("Test")
+    await api.async_authenticate(entry.data[CONF_USERNAME], entry.data[CONF_PIN])
 
     # 1. Create API instance
     # 2. Validate the API connection (and authentication)
