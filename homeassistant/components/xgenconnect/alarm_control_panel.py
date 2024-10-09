@@ -27,6 +27,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .alarm_system import XGenConnectAlarmSystem
+from .api.data import PartitionInfo
 from .const import LOGGER
 from .types import XGenConnectConfigEntry
 
@@ -53,7 +54,7 @@ async def async_setup_entry(
     from .entity_factory import XGenConnectEntityFactory
 
     factory = XGenConnectEntityFactory(hass, config_entry)
-    async_add_entities(factory.get_alarm_panels())
+    async_add_entities(await factory.async_get_alarm_panels())
 
 
 # Alarm panel implementation
@@ -69,7 +70,9 @@ class xGenConnectAlarmPartition(
     system: XGenConnectAlarmSystem
     partition_index: int
 
-    def __init__(self, system: XGenConnectAlarmSystem, partition_index: int) -> None:
+    def __init__(
+        self, system: XGenConnectAlarmSystem, partitionInfo: PartitionInfo
+    ) -> None:
         """Initialize the alarm panel."""
         self.supported_features = (
             AlarmControlPanelEntityFeature.ARM_AWAY
@@ -84,9 +87,9 @@ class xGenConnectAlarmPartition(
         # self.entity_description = AlarmControlPanelEntityDescription()
 
         self.system = system
-        self.partition_index = partition_index
+        self.partition_index = partitionInfo.index
 
-        self._attr_name = self.system.get_partition_name(self.partition_index)
+        self._attr_name = partitionInfo.name
         self._attr_native_value = 123
         self._attr_state = STATE_ALARM_DISARMED
         self._attr_code_arm_required = True

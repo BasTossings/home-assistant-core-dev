@@ -34,7 +34,7 @@ async def async_setup_entry(
     from .entity_factory import XGenConnectEntityFactory
 
     factory = XGenConnectEntityFactory(hass, config_entry)
-    async_add_entities(factory.get_sensors())
+    async_add_entities(await factory.async_get_sensors())
 
 
 # Sensor implementations

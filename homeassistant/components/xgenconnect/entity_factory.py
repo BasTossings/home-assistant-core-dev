@@ -13,6 +13,7 @@ from homeassistant.helpers.entity import Entity
 
 from .alarm_control_panel import xGenConnectAlarmPartition
 from .alarm_system import XGenConnectAlarmSystem
+from .api.data import PartitionInfo
 from .sensor import XGenConnectSensorEntity, XGenConnectSensorEntityDescription
 
 # from .const import DOMAIN, LOGGER
@@ -41,16 +42,19 @@ class XGenConnectEntityFactory:
     ) -> None:
         """Initialize the entity factory."""
         self.system = XGenConnectAlarmSystem(hass, config_entry)
+        # config_entry.runtime_data.  # Cache XGenConnectAlarmSystem instance in runtime_data?
         self.hass = hass
 
-    def get_alarm_panels(self) -> Iterable[Entity]:
+    async def async_get_alarm_panels(self) -> Iterable[Entity]:
         """Get the alarm panel entities for this configuration entry."""
 
-        return [self.__create_partition(x) for x in range(2)]
+        await self.system.async_update_api_data()
+        return [self.__create_partition(x) for x in self.system.partitions]
 
-    def get_sensors(self) -> Iterable[Entity]:
+    async def async_get_sensors(self) -> Iterable[Entity]:
         """Get the sensor entities for this configuration entry."""
 
+        await self.system.async_update_api_data()
         return [self.__create_sensor(x) for x in SENSOR_DEFINITIONS]
 
     def __create_sensor(
@@ -58,5 +62,7 @@ class XGenConnectEntityFactory:
     ) -> XGenConnectSensorEntity:
         return XGenConnectSensorEntity(description, self.system)
 
-    def __create_partition(self, partition_index: int) -> xGenConnectAlarmPartition:
-        return xGenConnectAlarmPartition(self.system, partition_index)
+    def __create_partition(
+        self, partition_info: PartitionInfo
+    ) -> xGenConnectAlarmPartition:
+        return xGenConnectAlarmPartition(self.system, partition_info)

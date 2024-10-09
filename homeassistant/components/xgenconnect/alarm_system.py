@@ -9,7 +9,9 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )  # , UpdateFailed
 
-from .const import DOMAIN, LOGGER, PARTITION_STATUS_UPDATE_INTERVAL
+from .api.data import PartitionInfo
+from .api.xGenConnectApi import XGenConnectApi
+from .const import DATA_API_CLIENT, DOMAIN, LOGGER, PARTITION_STATUS_UPDATE_INTERVAL
 from .types import XGenConnectConfigEntry
 
 
@@ -20,6 +22,8 @@ class XGenConnectAlarmSystem:
     config_entry: XGenConnectConfigEntry
     device_info: DeviceInfo
     coordinator: DataUpdateCoordinator[None]
+    api: XGenConnectApi
+    partitions: list[PartitionInfo]
 
     def __init__(
         self, hass: HomeAssistant, config_entry: XGenConnectConfigEntry
@@ -28,6 +32,7 @@ class XGenConnectAlarmSystem:
 
         self.config_entry = config_entry
         self.hass = hass
+        self.api = self.config_entry.runtime_data[DATA_API_CLIENT]
 
         self.device_info = DeviceInfo(
             identifiers={(DOMAIN, self.config_entry.data[CONF_HOST])},
@@ -42,9 +47,9 @@ class XGenConnectAlarmSystem:
             update_interval=self.update_interval,
         )
 
-    def get_partition_name(self, partition_index: int) -> str:
-        """Get the name for the specified partition."""
-        return f"Partition {partition_index}"
+    async def async_update_api_data(self):
+        """Retrieve and cache data for this alarm system from the API."""
+        self.partitions = await self.api.async_retrieve_partitions()
 
     @property
     def update_interval(self) -> timedelta:
