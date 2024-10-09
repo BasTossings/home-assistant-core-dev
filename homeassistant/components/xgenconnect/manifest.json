@@ -8,6 +8,7 @@
   "homekit": {},
   "integration_type": "hub",
   "iot_class": "local_polling",
+  "loggers": ["custom_components.xgenconnect"],
   "requirements": [],
   "ssdp": [],
   "zeroconf": []
