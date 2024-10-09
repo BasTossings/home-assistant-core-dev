@@ -67,6 +67,8 @@ class XGenConnectApi:
             data=data,
             timeout=HTTP_TIMEOUT,
             headers=headers,
+            allow_redirects=False,
+            stream=False,
             # proxies=proxies,
         )
 
@@ -76,7 +78,7 @@ class XGenConnectApi:
     async def async_authenticate(self, user: str, pin: str):
         """Authenticate the user to the xGenConnect webserver."""
 
-        self._test_tcp()
+        # self._test_tcp()
 
         LOGGER.info(f"Python version: {sys.version}.")
 
@@ -119,7 +121,7 @@ class XGenConnectApi:
         # response = await httpx.post (url,data=data)
 
         # async with self.aiohttp_session.post(url="/login.cgi", data=data) as response:
-        if not response.ok:
+        if not response.ok or response.status_code != 200:
             LOGGER.error(
                 f"Authentication to alarm system at {self.base_url} failed: {response.reason}"
             )
