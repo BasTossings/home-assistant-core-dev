@@ -4,17 +4,14 @@ from __future__ import annotations
 
 # import socket
 # from aiohttp import ClientError
-from homeassistant.const import CONF_HOST, CONF_PIN, CONF_USERNAME, Platform
+from homeassistant.const import CONF_HOST, CONF_PIN, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 # from homeassistant.exceptions import ConfigEntryNotReady
 # from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api.xGenConnectApi import XGenConnectApi
-
-# from .const import LOGGER
+from .const import DOMAIN, LOGGER, PLATFORMS, STARTUP_MESSAGE
 from .types import XGenConnectConfigEntry, XGenConnectData
-
-PLATFORMS: list[Platform] = [Platform.ALARM_CONTROL_PANEL]
 
 # async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 #     """Foo Bar."""
@@ -22,10 +19,18 @@ PLATFORMS: list[Platform] = [Platform.ALARM_CONTROL_PANEL]
 
 #     return True
 
+LOGGER.info(STARTUP_MESSAGE)
+
 
 # Update entry annotation
 async def async_setup_entry(hass: HomeAssistant, entry: XGenConnectConfigEntry) -> bool:
     """Set up xGenConnect from a config entry."""
+
+    # Setup DOMAIN as default
+    hass.data.setdefault(DOMAIN, {})
+
+    # ?
+    # hass.data[DOMAIN]["device_specific_sensors"] = {}
 
     # session = async_get_clientsession(hass)
     api = XGenConnectApi(entry.data[CONF_HOST])
@@ -62,4 +67,6 @@ async def async_unload_entry(
     hass: HomeAssistant, entry: XGenConnectConfigEntry
 ) -> bool:
     """Unload a config entry."""
+
+    # Unload all platforms associated with this entry
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
