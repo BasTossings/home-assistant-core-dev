@@ -50,9 +50,7 @@ async def async_setup_entry(
     # pylint: disable=fixme, import-outside-toplevel
     # pylint: disable=fixme, hass-relative-import
 
-    from homeassistant.components.xgenconnect.entity_factory import (
-        XGenConnectEntityFactory,
-    )
+    from .entity_factory import XGenConnectEntityFactory
 
     factory = XGenConnectEntityFactory(hass, config_entry)
     async_add_entities(factory.get_alarm_panels())
